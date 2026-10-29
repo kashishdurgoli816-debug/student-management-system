@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Student Attendance Management System</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#EEF2EF;--surf:#fff;--ink:#14231F;--mute:#5B6B66;--line:#D5DDD9;--board:#17352E;--chalk:#F2C14E;--ok:#1E7A4F;--bad:#B3362B;--okbg:#DDF1E6;--badbg:#F8DEDA;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0F1A17;--surf:#17241F;--ink:#E6EFEB;--mute:#93A59E;--line:#2B3D37;--board:#0B1613;--ok:#5CCB93;--bad:#F08A7F;--okbg:#18382A;--badbg:#42211D}}
+:root[data-theme="dark"]{--bg:#0F1A17;--surf:#17241F;--ink:#E6EFEB;--mute:#93A59E;--line:#2B3D37;--board:#0B1613;--ok:#5CCB93;--bad:#F08A7F;--okbg:#18382A;--badbg:#42211D}
+*{box-sizing:inherit}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 "Bricolage Grotesque",system-ui,sans-serif;min-height:100vh}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--chalk);outline-offset:2px}
+.login{display:grid;grid-template-columns:1.1fr 1fr;min-height:100vh}
+.board{background:var(--board);color:#F4F7F5;padding:56px 48px;display:flex;flex-direction:column;justify-content:space-between}
+.board h1{font-size:clamp(2.2rem,5vw,3.6rem);line-height:1.02;font-weight:800;margin:0 0 16px;letter-spacing:-.02em}
+.board p{max-width:34ch;color:#BFD0CA;margin:0}
+.tally{display:flex;gap:14px;align-items:flex-end;margin-top:32px}
+.tally span{display:block;width:6px;height:56px;background:var(--chalk);border-radius:3px}
+.tally span:nth-child(5){width:70px;height:6px;margin-left:-56px;margin-bottom:24px;transform:rotate(-62deg);transform-origin:left}
+.board small{color:#8FA79F}
+.panel{padding:56px 48px;display:flex;flex-direction:column;justify-content:center;max-width:520px}
+.panel h2{margin:0 0 4px;font-size:1.6rem}
+.tabs{display:flex;gap:8px;margin:20px 0}
+.tabs button{flex:1;padding:10px;border:1.5px solid var(--line);background:var(--surf);border-radius:8px;font-weight:600}
+.tabs button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+label{display:block;font-weight:600;margin:12px 0 4px;font-size:.92rem}
+input,select{width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;background:var(--surf)}
+.btn{background:var(--board);color:#fff;border:0;padding:11px 18px;border-radius:8px;font-weight:600}
+.btn.alt{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn.chalk{background:var(--chalk);color:#14231F}
+.panel .btn{width:100%;margin-top:18px}
+.hint{font-size:.85rem;color:var(--mute);margin-top:14px;padding:10px 12px;background:var(--surf);border:1px dashed var(--line);border-radius:8px}
+.err{color:var(--bad);font-weight:600;min-height:1.4em;margin-top:8px}
+.app{display:grid;grid-template-columns:230px 1fr;min-height:100vh}
+.side{background:var(--board);color:#F4F7F5;padding:24px 16px;display:flex;flex-direction:column;gap:6px}
+.side b{font-size:1.1rem;line-height:1.2;margin-bottom:4px}
+.side .who{color:#9FB5AD;font-size:.85rem;margin-bottom:18px}
+.side button.nav{text-align:left;background:none;border:0;color:#D5E2DD;padding:10px 12px;border-radius:8px}
+.side button.nav[aria-current=page]{background:rgba(242,193,78,.16);color:var(--chalk);font-weight:600}
+.side .sp{flex:1}
+main{padding:32px;max-width:1000px;width:100%}
+main h2{margin:0 0 4px;font-size:1.7rem;letter-spacing:-.01em}
+.sub{color:var(--mute);margin:0 0 22px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:24px}
+.stat{background:var(--surf);border:1px solid var(--line);border-radius:10px;padding:16px}
+.stat b{display:block;font-size:2rem;line-height:1.1}
+.stat span{color:var(--mute);font-size:.9rem}
+.box{background:var(--surf);border:1px solid var(--line);border-radius:10px;padding:18px;margin-bottom:20px}
+.box h3{margin:0 0 12px;font-size:1.05rem}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.row>div{flex:1;min-width:140px}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:.85rem;color:var(--mute);font-weight:600}
+.pill{display:inline-block;padding:2px 10px;border-radius:99px;font-weight:600;font-size:.85rem}
+.pill.ok{background:var(--okbg);color:var(--ok)}.pill.bad{background:var(--badbg);color:var(--bad)}
+.bar{height:8px;background:var(--line);border-radius:4px;min-width:90px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ok)}.bar i.low{background:var(--bad)}
+.pa{display:inline-flex;border:1.5px solid var(--line);border-radius:8px;overflow:hidden}
+.pa button{border:0;background:var(--surf);padding:6px 16px;font-weight:600}
+.pa button[aria-pressed=true].p{background:var(--ok);color:#fff}
+.pa button[aria-pressed=true].a{background:var(--bad);color:#fff}
+.del{background:none;border:0;color:var(--bad);font-weight:600}
+.big{font-size:3.4rem;font-weight:800;line-height:1}
+.toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:8px;font-weight:600}
+.menu{display:none}
+@media (max-width:760px){
+.login{grid-template-columns:1fr}.board{padding:32px 24px}.panel{padding:28px 24px;max-width:none}
+.app{grid-template-columns:1fr}.side{flex-direction:row;flex-wrap:wrap;align-items:center;padding:12px}.side .who,.side .sp{display:none}.side b{width:100%}
+main{padding:20px 16px}}
+@media (prefers-reduced-motion:no-preference){.tally span{animation:grow .6s ease-out both}.tally span:nth-child(2){animation-delay:.1s}.tally span:nth-child(3){animation-delay:.2s}.tally span:nth-child(4){animation-delay:.3s}.tally span:nth-child(5){animation-delay:.4s}}
+@keyframes grow{from{transform:scaleY(0);transform-origin:bottom}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+"use strict";
+var KEY="sams_v1",TH=75,S=null,user=null,view="",tab="admin";
+function today(){return new Date().toISOString().slice(0,10)}
+function seed(){
+  var subs=[{id:"s1",name:"Database Management"},{id:"s2",name:"Web Technologies (PHP)"},{id:"s3",name:"Software Engineering"}];
+  var names=["Aarav Patil","Isha Naik","Rohan Shah","Meera Joshi","Kabir Singh","Sneha Pawar","Yash Mehta","Tanvi Rao"];
+  var studs=names.map(function(n,i){return{id:"st"+(i+1),roll:i+1,name:n,cls:"T.Y.BSc.CS"}});
+  var teach=[{id:"t1",name:"Prof. Deshmukh",user:"teacher1",subs:["s1","s3"]},{id:"t2",name:"Prof. Kulkarni",user:"teacher2",subs:["s2"]}];
+  var att=[],d=new Date();
+  for(var k=1;k<=12;k++){var dt=new Date(d.getTime()-k*86400000);if(dt.getDay()===0)continue;var ds=dt.toISOString().slice(0,10);
+    subs.forEach(function(s,si){studs.forEach(function(st,i){var v=(k*7+si*5+i*i*3+i)%11;var low=(i===2||i===6);att.push({date:ds,sub:s.id,stu:st.id,p:low?(v>3):(v>0)})})})}
+  return{subs:subs,studs:studs,teach:teach,att:att}}
+function load(){try{var r=localStorage.getItem(KEY);if(r)S=JSON.parse(r)}catch(e){}if(!S)S=seed()}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function $(h){var t=document.createElement("template");t.innerHTML=h.trim();return t.content.firstChild}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function toast(m){var t=$('<div class="toast" role="status">'+esc(m)+'</div>');document.body.appendChild(t);setTimeout(function(){t.remove()},2200)}
+function pct(stu,sub){var r=S.att.filter(function(a){return a.stu===stu&&(!sub||a.sub===sub)});if(!r.length)return null;return Math.round(r.filter(function(a){return a.p}).length*100/r.length)}
+function pill(p){return p===null?"–":'<span class="pill '+(p>=TH?"ok":"bad")+'">'+p+'%</span>'}
+function bar(p){return p===null?"":'<div class="bar"><i class="'+(p<TH?"low":"")+'" style="width:'+p+'%"></i></div>'}
+function subName(id){var s=S.subs.find(function(x){return x.id===id});return s?s.name:""}
+
+/* ---------- Login ---------- */
+function renderLogin(){
+  var r=document.getElementById("root");
+  r.innerHTML='<div class="login"><section class="board"><div><h1>Student Attendance Management System</h1><p>Record attendance, calculate percentages automatically and see reports in seconds, with no registers or spreadsheets.</p><div class="tally" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div></div><small>T.Y.BSc.CS project &middot; Kashish Sharad Durgoli</small></section>'+
+  '<section class="panel"><h2>Sign in</h2><div class="sub" style="color:var(--mute)">Choose your role to continue.</div><div class="tabs" role="group" aria-label="Role"></div><label for="u">Username</label><input id="u" autocomplete="username"><label for="p">Password</label><input id="p" type="password" autocomplete="current-password"><div class="err" id="err" role="alert"></div><button class="btn" id="go">Sign in</button><div class="hint" id="hint"></div></section></div>';
+  var tabs=r.querySelector(".tabs");
+  ["admin","teacher","student"].forEach(function(t){var b=$('<button type="button" aria-pressed="'+(t===tab)+'">'+t[0].toUpperCase()+t.slice(1)+'</button>');b.onclick=function(){tab=t;renderLogin()};tabs.appendChild(b)});
+  var h={admin:"Demo: admin / admin123",teacher:"Demo: teacher1 / teach123 (or teacher2)",student:"Demo: student1 to student8 / stud123"};
+  document.getElementById("hint").textContent=h[tab];
+  function go(){var u=document.getElementById("u").value.trim().toLowerCase(),p=document.getElementById("p").value,found=null;
+    if(tab==="admin"&&u==="admin"&&p==="admin123")found={role:"admin",name:"Administrator"};
+    if(tab==="teacher"&&p==="teach123"){var t=S.teach.find(function(x){return x.user===u});if(t)found={role:"teacher",name:t.name,id:t.id}}
+    if(tab==="student"&&p==="stud123"){var m=/^student(\d+)$/.exec(u);var s=m&&S.studs.find(function(x){return x.roll===+m[1]});if(s)found={role:"student",name:s.name,id:s.id}}
+    if(!found){document.getElementById("err").textContent="Username or password is incorrect.";return}
+    user=found;view=found.role==="admin"?"dash":found.role==="teacher"?"mark":"mine";renderApp()}
+  document.getElementById("go").onclick=go;
+  r.querySelectorAll("input").forEach(function(i){i.onkeydown=function(e){if(e.key==="Enter")go()}})}
+
+/* ---------- Shell ---------- */
+var NAV={admin:[["dash","Dashboard"],["students","Students"],["teachers","Teachers"],["subjects","Subjects"],["report","Reports"]],teacher:[["mark","Mark attendance"],["report","Reports"]],student:[["mine","My attendance"]]};
+function renderApp(){
+  var r=document.getElementById("root");r.innerHTML="";
+  var app=$('<div class="app"><nav class="side" aria-label="Main"><b>Attendance<br>Management</b><div class="who"></div></nav><main id="main"></main></div>');
+  app.querySelector(".who").textContent=user.name+" ("+user.role+")";
+  var side=app.querySelector(".side");
+  NAV[user.role].forEach(function(n){var b=$('<button class="nav" '+(view===n[0]?'aria-current="page"':"")+'>'+n[1]+'</button>');b.onclick=function(){view=n[0];renderApp()};side.appendChild(b)});
+  side.appendChild($('<div class="sp"></div>'));
+  var th=$('<button class="nav">Toggle theme</button>');th.onclick=function(){var d=document.documentElement;var dark=d.dataset.theme?d.dataset.theme==="dark":matchMedia("(prefers-color-scheme:dark)").matches;d.dataset.theme=dark?"light":"dark"};side.appendChild(th);
+  var lo=$('<button class="nav">Sign out</button>');lo.onclick=function(){user=null;renderLogin()};side.appendChild(lo);
+  r.appendChild(app);
+  var m=document.getElementById("main");
+  ({dash:vDash,students:vStudents,teachers:vTeachers,subjects:vSubjects,report:vReport,mark:vMark,mine:vMine})[view](m)}
+
+/* ---------- Views ---------- */
+function vDash(m){
+  var all=pct(null,null),low=S.studs.filter(function(s){var p=pct(s.id);return p!==null&&p<TH});
+  m.innerHTML='<h2>Dashboard</h2><p class="sub">Overview of the whole institute.</p><div class="cards"><div class="stat"><b>'+S.studs.length+'</b><span>Students</span></div><div class="stat"><b>'+S.teach.length+'</b><span>Teachers</span></div><div class="stat"><b>'+S.subs.length+'</b><span>Subjects</span></div><div class="stat"><b>'+(all===null?"–":all+"%")+'</b><span>Overall attendance</span></div></div><div class="box"><h3>Below '+TH+'% attendance</h3>'+
+  (low.length?'<div class="tw"><table><tr><th>Roll</th><th>Name</th><th>Attendance</th></tr>'+low.map(function(s){return"<tr><td>"+s.roll+"</td><td>"+esc(s.name)+"</td><td>"+pill(pct(s.id))+"</td></tr>"}).join("")+"</table></div>":"<p class='sub'>Every student is at or above "+TH+"%.</p>")+"</div>"}
+
+function vStudents(m){
+  m.innerHTML='<h2>Students</h2><p class="sub">Add and remove student records.</p><div class="box"><h3>Add student</h3><div class="row"><div><label for="n">Full name</label><input id="n"></div><div><label for="c">Class</label><input id="c" value="T.Y.BSc.CS"></div><button class="btn" id="add">Add student</button></div></div><div class="box tw"><table id="t"></table></div>';
+  function draw(){document.getElementById("t").innerHTML="<tr><th>Roll</th><th>Name</th><th>Class</th><th>Login</th><th></th></tr>"+S.studs.map(function(s){return"<tr><td>"+s.roll+"</td><td>"+esc(s.name)+"</td><td>"+esc(s.cls)+"</td><td>student"+s.roll+"</td><td><button class='del' data-id='"+s.id+"'>Remove</button></td></tr>"}).join("");
+    document.querySelectorAll(".del").forEach(function(b){b.onclick=function(){S.studs=S.studs.filter(function(s){return s.id!==b.dataset.id});S.att=S.att.filter(function(a){return a.stu!==b.dataset.id});save();draw();toast("Student removed")}})}
+  document.getElementById("add").onclick=function(){var n=document.getElementById("n").value.trim();if(!n){toast("Enter the student's name");return}
+    var roll=S.studs.reduce(function(a,s){return Math.max(a,s.roll)},0)+1;S.studs.push({id:"st"+Date.now(),roll:roll,name:n,cls:document.getElementById("c").value.trim()||"T.Y.BSc.CS"});save();document.getElementById("n").value="";draw();toast("Student added")};
+  draw()}
+
+function vTeachers(m){
+  m.innerHTML='<h2>Teachers</h2><p class="sub">Add teachers and assign subjects. New teachers sign in with the password teach123.</p><div class="box"><h3>Add teacher</h3><div class="row"><div><label for="n">Name</label><input id="n"></div><div><label for="u">Username</label><input id="u"></div><div><label for="s">Subject</label><select id="s">'+S.subs.map(function(s){return'<option value="'+s.id+'">'+esc(s.name)+"</option>"}).join("")+'</select></div><button class="btn" id="add">Add teacher</button></div></div><div class="box tw"><table id="t"></table></div>';
+  function draw(){document.getElementById("t").innerHTML="<tr><th>Name</th><th>Username</th><th>Subjects</th><th></th></tr>"+S.teach.map(function(t){return"<tr><td>"+esc(t.name)+"</td><td>"+esc(t.user)+"</td><td>"+t.subs.map(subName).map(esc).join(", ")+"</td><td><button class='del' data-id='"+t.id+"'>Remove</button></td></tr>"}).join("");
+    document.querySelectorAll(".del").forEach(function(b){b.onclick=function(){S.teach=S.teach.filter(function(t){return t.id!==b.dataset.id});save();draw();toast("Teacher removed")}})}
+  document.getElementById("add").onclick=function(){var n=document.getElementById("n").value.trim(),u=document.getElementById("u").value.trim().toLowerCase();if(!n||!u){toast("Enter a name and username");return}
+    if(S.teach.some(function(t){return t.user===u})){toast("That username is taken");return}
+    S.teach.push({id:"t"+Date.now(),name:n,user:u,subs:[document.getElementById("s").value]});save();draw();toast("Teacher added")};
+  draw()}
+
+function vSubjects(m){
+  m.innerHTML='<h2>Subjects</h2><p class="sub">Manage the subjects attendance is recorded for.</p><div class="box"><h3>Add subject</h3><div class="row"><div><label for="n">Subject name</label><input id="n"></div><button class="btn" id="add">Add subject</button></div></div><div class="box tw"><table id="t"></table></div>';
+  function draw(){document.getElementById("t").innerHTML="<tr><th>Subject</th><th>Class average</th><th></th></tr>"+S.subs.map(function(s){var p=pct(null,s.id);return"<tr><td>"+esc(s.name)+"</td><td>"+pill(p)+"</td><td><button class='del' data-id='"+s.id+"'>Remove</button></td></tr>"}).join("");
+    document.querySelectorAll(".del").forEach(function(b){b.onclick=function(){S.subs=S.subs.filter(function(s){return s.id!==b.dataset.id});S.att=S.att.filter(function(a){return a.sub!==b.dataset.id});S.teach.forEach(function(t){t.subs=t.subs.filter(function(x){return x!==b.dataset.id})});save();draw();toast("Subject removed")}})}
+  document.getElementById("add").onclick=function(){var n=document.getElementById("n").value.trim();if(!n){toast("Enter a subject name");return}S.subs.push({id:"s"+Date.now(),name:n});save();document.getElementById("n").value="";draw();toast("Subject added")};
+  draw()}
+
+function vMark(m){
+  var t=S.teach.find(function(x){return x.id===user.id}),subs=S.subs.filter(function(s){return t&&t.subs.indexOf(s.id)>-1});
+  if(!subs.length){m.innerHTML="<h2>Mark attendance</h2><p class='sub'>No subjects are assigned to you yet. Ask the admin to assign one.</p>";return}
+  m.innerHTML='<h2>Mark attendance</h2><p class="sub">Pick a subject and date, mark each student, then save.</p><div class="box"><div class="row"><div><label for="sb">Subject</label><select id="sb">'+subs.map(function(s){return'<option value="'+s.id+'">'+esc(s.name)+"</option>"}).join("")+'</select></div><div><label for="dt">Date</label><input id="dt" type="date" value="'+today()+'" max="'+today()+'"></div><button class="btn alt" id="allp">Mark all present</button></div></div><div class="box tw"><table id="t"></table><div style="margin-top:14px"><button class="btn chalk" id="sv">Save attendance</button></div></div>';
+  var cur={};
+  function draw(){var sub=document.getElementById("sb").value,d=document.getElementById("dt").value;cur={};
+    S.studs.forEach(function(s){var e=S.att.find(function(a){return a.date===d&&a.sub===sub&&a.stu===s.id});cur[s.id]=e?e.p:true});
+    var tb=document.getElementById("t");tb.innerHTML="<tr><th>Roll</th><th>Name</th><th>Overall</th><th>Status</th></tr>";
+    S.studs.forEach(function(s){var tr=$("<tr><td>"+s.roll+"</td><td>"+esc(s.name)+"</td><td>"+pill(pct(s.id,sub))+'</td><td><div class="pa"><button class="p">Present</button><button class="a">Absent</button></div></td></tr>');
+      var bp=tr.querySelector(".p"),ba=tr.querySelector(".a");
+      function sync(){bp.setAttribute("aria-pressed",cur[s.id]);ba.setAttribute("aria-pressed",!cur[s.id])}
+      bp.onclick=function(){cur[s.id]=true;sync()};ba.onclick=function(){cur[s.id]=false;sync()};sync();tb.appendChild(tr)})}
+  document.getElementById("sb").onchange=draw;document.getElementById("dt").onchange=draw;
+  document.getElementById("allp").onclick=function(){draw()};
+  document.getElementById("sv").onclick=function(){var sub=document.getElementById("sb").value,d=document.getElementById("dt").value;if(!d){toast("Choose a date");return}
+    S.att=S.att.filter(function(a){return!(a.date===d&&a.sub===sub)});
+    S.studs.forEach(function(s){S.att.push({date:d,sub:sub,stu:s.id,p:cur[s.id]})});save();toast("Attendance saved");renderApp()};
+  draw()}
+
+function vReport(m){
+  var opts=S.subs.filter(function(s){if(user.role!=="teacher")return true;var t=S.teach.find(function(x){return x.id===user.id});return t&&t.subs.indexOf(s.id)>-1});
+  m.innerHTML='<h2>Reports</h2><p class="sub">Attendance percentage per student, by subject.</p><div class="box"><div class="row"><div><label for="rs">Subject</label><select id="rs"><option value="">All subjects</option>'+opts.map(function(s){return'<option value="'+s.id+'">'+esc(s.name)+"</option>"}).join("")+'</select></div><div><label for="rq">Search student</label><input id="rq" placeholder="Name or roll"></div><button class="btn alt" id="csv">Download CSV</button></div></div><div class="box tw"><table id="t"></table></div>';
+  var rows=[];
+  function draw(){var sub=document.getElementById("rs").value,q=document.getElementById("rq").value.toLowerCase();
+    rows=S.studs.filter(function(s){return!q||s.name.toLowerCase().indexOf(q)>-1||String(s.roll)===q}).map(function(s){var r=S.att.filter(function(a){return a.stu===s.id&&(!sub||a.sub===sub)});var p=r.filter(function(a){return a.p}).length;return{s:s,total:r.length,pres:p,pc:pct(s.id,sub||null)}});
+    document.getElementById("t").innerHTML="<tr><th>Roll</th><th>Name</th><th>Present</th><th>Classes</th><th>Percentage</th><th></th></tr>"+rows.map(function(r){return"<tr><td>"+r.s.roll+"</td><td>"+esc(r.s.name)+"</td><td>"+r.pres+"</td><td>"+r.total+"</td><td>"+pill(r.pc)+"</td><td>"+bar(r.pc)+"</td></tr>"}).join("")}
+  document.getElementById("rs").onchange=draw;document.getElementById("rq").oninput=draw;
+  document.getElementById("csv").onclick=function(){var c="Roll,Name,Present,Classes,Percentage\n"+rows.map(function(r){return[r.s.roll,'"'+r.s.name+'"',r.pres,r.total,r.pc===null?"":r.pc].join(",")}).join("\n");
+    var a=document.createElement("a");a.href="data:text/csv;charset=utf-8,"+encodeURIComponent(c);a.download="attendance-report.csv";a.click()};
+  draw()}
+
+function vMine(m){
+  var me=S.studs.find(function(s){return s.id===user.id}),o=pct(me.id);
+  m.innerHTML='<h2>My attendance</h2><p class="sub">'+esc(me.name)+" · Roll "+me.roll+'</p><div class="cards"><div class="stat"><div class="big" style="color:'+(o!==null&&o<TH?"var(--bad)":"var(--ok)")+'">'+(o===null?"–":o+"%")+'</div><span>Overall attendance</span></div></div>'+
+  (o!==null&&o<TH?'<div class="box" style="border-color:var(--bad)"><b>Your attendance is below '+TH+'%.</b> Attend more classes to get back above the limit.</div>':"")+
+  '<div class="box tw"><h3>By subject</h3><table><tr><th>Subject</th><th>Present</th><th>Classes</th><th>Percentage</th><th></th></tr>'+S.subs.map(function(s){var r=S.att.filter(function(a){return a.stu===me.id&&a.sub===s.id}),p=pct(me.id,s.id);return"<tr><td>"+esc(s.name)+"</td><td>"+r.filter(function(a){return a.p}).length+"</td><td>"+r.length+"</td><td>"+pill(p)+"</td><td>"+bar(p)+"</td></tr>"}).join("")+"</table></div>"+
+  '<div class="box tw"><h3>Recent classes</h3><table><tr><th>Date</th><th>Subject</th><th>Status</th></tr>'+S.att.filter(function(a){return a.stu===me.id}).sort(function(a,b){return a.date<b.date?1:-1}).slice(0,10).map(function(a){return"<tr><td>"+a.date+"</td><td>"+esc(subName(a.sub))+'</td><td><span class="pill '+(a.p?"ok":"bad")+'">'+(a.p?"Present":"Absent")+"</span></td></tr>"}).join("")+"</table></div>"}
+
+load();renderLogin();
+</script>
+</body>
+</html>
